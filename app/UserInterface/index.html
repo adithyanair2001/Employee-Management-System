@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Directory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            padding: 20px;
+        }
+        #details {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+        }
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            width: 300px;
+        }
+        h1, h2 {
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            color: #fff;
+        }
+        table, th, td {
+            border: 1px solid #fff;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    <script>
+        async function showDetails(empId) {
+            if (!empId) {
+                document.getElementById('details').innerHTML = '<h2>Details</h2>';
+                return;
+            }
+            const res = await fetch(`/employee/${empId}`);
+            if (!res.ok) {
+                document.getElementById('details').innerHTML = '<p>Error fetching details</p>';
+                return;
+            }
+            const data = await res.json();
+            document.getElementById('details').innerHTML = `
+                <h2>Details</h2>
+                <table>
+                    <tr><th>Name</th><td>${data.name}</td></tr>
+                    <tr><th>Employee ID</th><td>${data.employee_id}</td></tr>
+                    <tr><th>Salary</th><td>$${data.salary}</td></tr>
+                    <tr><th>Department</th><td>${data.department}</td></tr>
+                </table>
+            `;
+        }
+    </script>
+</head>
+<body>
+    <h1>Employees</h1>
+    <select onchange="showDetails(this.value)">
+        <option value="">-- Select an employee --</option>
+        {% for emp in employees %}
+            <option value="{{ emp.employee_id }}">{{ emp.first_name }} {{ emp.last_name }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="details">
+        <h2>Details</h2>
+        <!-- Employee details will appear here -->
+    </div>
+</body>
+</html>

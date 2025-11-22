@@ -1,0 +1,17 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY Application/requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY Application/requirements.txt .
+
+COPY Application/ ./Application/
+
+COPY UserInterface/ ./UserInterface/
+
+WORKDIR /app/Application
+
+CMD ["python", "application.py"]
