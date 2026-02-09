@@ -18,12 +18,13 @@
             border-radius: 8px;
             max-width: 400px;
         }
-        select {
+        select, input, button {
             padding: 8px;
             font-size: 16px;
             border-radius: 6px;
             border: none;
-            width: 300px;
+            width: 100%;
+            margin-bottom: 10px;
         }
         h1, h2 {
             text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
@@ -44,6 +45,21 @@
         th {
             background-color: rgba(255, 255, 255, 0.2);
         }
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            #details {
+                max-width: 100%;
+            }
+        }
+        .success, .error {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .success { background: #4caf50cc; color: #fff; }
+        .error { background: #f44336cc; color: #fff; }
     </style>
     <script>
         async function showDetails(empId) {
@@ -53,7 +69,7 @@
             }
             const res = await fetch(`/employee/${empId}`);
             if (!res.ok) {
-                document.getElementById('details').innerHTML = '<p>Error fetching details</p>';
+                document.getElementById('details').innerHTML = '<p class="error">Error fetching details</p>';
                 return;
             }
             const data = await res.json();
@@ -66,6 +82,44 @@
                     <tr><th>Department</th><td>${data.department}</td></tr>
                 </table>
             `;
+        }
+
+        async function addEmployee(event) {
+            event.preventDefault();
+            const first_name = document.getElementById('first_name').value.trim();
+            const last_name = document.getElementById('last_name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const hire_date = document.getElementById('hire_date').value;
+            const department_id = document.getElementById('department_id').value;
+            let errorMsg = '';
+            if (!first_name) errorMsg += 'First name is required. ';
+            if (!last_name) errorMsg += 'Last name is required. ';
+            if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errorMsg += 'Valid email is required. ';
+            if (!hire_date) errorMsg += 'Hire date is required. ';
+            if (!department_id) errorMsg += 'Department ID is required. ';
+            if (errorMsg) {
+                showMessage(errorMsg, 'error');
+                return;
+            }
+            const res = await fetch('/employee', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ first_name, last_name, email, hire_date, department_id })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showMessage(data.message, 'success');
+                document.getElementById('addEmployeeForm').reset();
+            } else {
+                showMessage(data.error || 'Error adding employee.', 'error');
+            }
+        }
+
+        function showMessage(msg, type) {
+            const msgDiv = document.getElementById('msg');
+            msgDiv.className = type;
+            msgDiv.textContent = msg;
+            setTimeout(() => { msgDiv.textContent = ''; msgDiv.className = ''; }, 4000);
         }
     </script>
 </head>
@@ -82,5 +136,16 @@
         <h2>Details</h2>
         <!-- Employee details will appear here -->
     </div>
+
+    <h2>Add Employee</h2>
+    <div id="msg"></div>
+    <form id="addEmployeeForm" onsubmit="addEmployee(event)">
+        <input type="text" id="first_name" placeholder="First Name" required />
+        <input type="text" id="last_name" placeholder="Last Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="date" id="hire_date" placeholder="Hire Date" required />
+        <input type="number" id="department_id" placeholder="Department ID" required min="1" />
+        <button type="submit">Add Employee</button>
+    </form>
 </body>
 </html>
